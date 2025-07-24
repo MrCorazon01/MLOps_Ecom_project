@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecomuserseg"
+description = "Python Boilerplate contains all the boilerplate you need to create a Python package."
+readme = "README.md"
+authors = [
+  {name = "Mansour Kholle", email = "khollemm@ept.sn"}
+]
+maintainers = [
+  {name = "Mansour Kholle", email = "khollemm@ept.sn"}
+]
+classifiers = [
+
+]
+license = {text = "MIT"}
+dependencies = [
+  "typer",
+  "yellowbrick",
+  "scikit-learn",
+  "pandas",
+  "numpy",
+  "matplotlib",
+  "seaborn",
+  "plotly",
+  "kmodes",
+  "scipy",
+  "mlflow"
+]
+requires-python = ">= 3.10"
+
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+    "coverage",  # testing
+    "pytest",  # testing
+    "ruff",  # linting
+    "ty", # checking types
+]
+
+[project.urls]
+
+bugs = "https://github.com/mrcorazon_01/ecomuserseg/issues"
+changelog = "https://github.com/mrcorazon_01/ecomuserseg/blob/master/changelog.md"
+homepage = "https://github.com/mrcorazon_01/ecomuserseg"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
+
+[project.scripts]
+ecomuserseg = "ecomuserseg.cli:app"
+
+[tool.setuptools.dynamic]
+version = {attr = "ecomuserseg.__version__"}
+
+[tool.ty]
+# All rules are enabled as "error" by default; no need to specify unless overriding.
+# Example override: relax a rule for the entire project (uncomment if needed).
+# rules.TY015 = "warn"  # For invalid-argument-type, warn instead of error.
+
+# Optional: Per-directory overrides for flexibility in boilerplates with tests or examples.
+[[tool.ty.overrides]]
+match = ["tests/**.py"]
+rules.TY016 = "ignore"  # Ignore invalid-assignment in tests, e.g., for dynamic fixtures.
+rules.TY029 = "ignore"  # Ignore invalid-return-type in tests.
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]

@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/mac/Desktop/DIC3/MLOps/MLOps_project/ecomuserseg/mlruns/178081276325678275/7c7100231b734a1f902ea252ca3af130/artifacts
+end_time: 1753386128315
+entry_point_name: ''
+experiment_id: '178081276325678275'
+lifecycle_stage: active
+run_id: 7c7100231b734a1f902ea252ca3af130
+run_name: preprocessing_20250724_194207
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753386128157
+status: 3
+tags: []
+user_id: mac
