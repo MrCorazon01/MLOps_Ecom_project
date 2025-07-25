@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/mac/Desktop/DIC3/MLOps/MLOps_project/ecomuserseg/mlruns/186089277023058083/863d9c493cc6470c8e0b7ba5957bceee/artifacts
+end_time: 1753475483454
+entry_point_name: ''
+experiment_id: '186089277023058083'
+lifecycle_stage: active
+run_id: 863d9c493cc6470c8e0b7ba5957bceee
+run_name: algorithm_comparison
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753475483372
+status: 3
+tags: []
+user_id: mac

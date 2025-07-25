@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/mac/Desktop/DIC3/MLOps/MLOps_project/ecomuserseg/mlruns/186089277023058083/ffd35b902b40419581e0afef1fb71934/artifacts
+end_time: 1753460640769
+entry_point_name: ''
+experiment_id: '186089277023058083'
+lifecycle_stage: active
+run_id: ffd35b902b40419581e0afef1fb71934
+run_name: kmeans_optimal_4clusters
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753460634196
+status: 3
+tags: []
+user_id: mac

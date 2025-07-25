@@ -26,7 +26,7 @@ def analyze_cluster(cluster_id, data_clustered, cluster_col='cluster'):
     # Statistiques principales
     print(f"\nCARACTÉRISTIQUES PRINCIPALES:")
     
-    # Variables à analyser (ajuster selon les colonnes disponibles)
+    # Variables à analyser 
     variables_to_analyze = {
         'total_spend': 'Dépense totale moyenne',
         'nb_orders': 'Nombre moyen de commandes',
@@ -75,36 +75,100 @@ def create_business_interpretation(data_clustered, cluster_col='cluster'):
     """
     interpretations = {}
     
+    # Calcul des médianes et moyennes globales pour comparaison
+    global_stats = {}
+    if 'total_spend' in data_clustered.columns:
+        global_stats['spend_median'] = data_clustered['total_spend'].median()
+        global_stats['spend_mean'] = data_clustered['total_spend'].mean()
+    if 'nb_orders' in data_clustered.columns:
+        global_stats['orders_median'] = data_clustered['nb_orders'].median()
+    if 'mean_review_score' in data_clustered.columns:
+        global_stats['rating_median'] = data_clustered['mean_review_score'].median()
+    if 'mean_delivery_days' in data_clustered.columns:
+        global_stats['delivery_median'] = data_clustered['mean_delivery_days'].median()
+    if 'haversine_distance' in data_clustered.columns:
+        global_stats['distance_median'] = data_clustered['haversine_distance'].median()
+    
+    # Collecte des moyennes par cluster pour comparaison relative
+    cluster_stats = {}
+    for cluster_id in sorted(data_clustered[cluster_col].unique()):
+        cluster_data = data_clustered[data_clustered[cluster_col] == cluster_id]
+        cluster_stats[cluster_id] = {
+            'spend': cluster_data['total_spend'].mean() if 'total_spend' in cluster_data.columns else 0,
+            'rating': cluster_data['mean_review_score'].mean() if 'mean_review_score' in cluster_data.columns else 0,
+            'delivery': cluster_data['mean_delivery_days'].mean() if 'mean_delivery_days' in cluster_data.columns else 0,
+            'distance': cluster_data['haversine_distance'].mean() if 'haversine_distance' in cluster_data.columns else 0
+        }
+    
+    # Tri des clusters par dépense pour hiérarchisation
+    clusters_by_spend = sorted(cluster_stats.items(), key=lambda x: x[1]['spend'], reverse=True)
+    
     for cluster_id in sorted(data_clustered[cluster_col].unique()):
         cluster_data = data_clustered[data_clustered[cluster_col] == cluster_id]
         
         # Caractéristiques moyennes
         cluster_size = len(cluster_data)
         
-        # Variables pour l'interprétation (ajuster selon les colonnes disponibles)
-        avg_spend = cluster_data['total_spend'].mean() if 'total_spend' in cluster_data.columns else 0
+        # Variables pour l'interprétation
+        avg_spend = cluster_stats[cluster_id]['spend']
         avg_orders = cluster_data['nb_orders'].mean() if 'nb_orders' in cluster_data.columns else 0
-        avg_rating = cluster_data['mean_review_score'].mean() if 'mean_review_score' in cluster_data.columns else 0
-        avg_delivery = cluster_data['mean_delivery_days'].mean() if 'mean_delivery_days' in cluster_data.columns else 0
-        avg_distance = cluster_data['haversine_distance'].mean() if 'haversine_distance' in cluster_data.columns else 0
+        avg_rating = cluster_stats[cluster_id]['rating']
+        avg_delivery = cluster_stats[cluster_id]['delivery']
+        avg_distance = cluster_stats[cluster_id]['distance']
         
-        # Profil type basé sur les caractéristiques
-        median_spend = data_clustered['total_spend'].median() if 'total_spend' in data_clustered.columns else 0
-        median_orders = data_clustered['nb_orders'].median() if 'nb_orders' in data_clustered.columns else 0
-        median_distance = data_clustered['haversine_distance'].median() if 'haversine_distance' in data_clustered.columns else 0
+        value_type = "Clients Standards"  # par défaut
         
-        if avg_spend > median_spend and avg_rating > 4:
-            value_type = "Clients Premium"
-        elif avg_orders > median_orders:
-            value_type = "Clients Fidèles"
-        elif avg_rating < 3.5:
-            value_type = "Clients Insatisfaits"
-        elif avg_distance > median_distance:
-            value_type = "Clients Éloignés"
-        elif avg_spend < median_spend:
-            value_type = "Clients Occasionnels"
+        # 1. D'abord identifier les clients à problème (priorité absolue)
+        if avg_rating < 2.5:  # Très insatisfaits
+            if avg_delivery > global_stats.get('delivery_median', 10) * 1.8:
+                value_type = "Clients à Risque - Livraison"
+            else:
+                value_type = "Clients Insatisfaits"
+        
+        # 2. Puis classifier selon performance combinée (satisfaction + dépense + livraison)
+        elif avg_rating >= 4.5 and avg_delivery <= global_stats.get('delivery_median', 10):
+            # Très satisfaits ET livraison rapide
+            spend_rank = [i for i, (cid, _) in enumerate(clusters_by_spend) if cid == cluster_id][0]
+            if spend_rank == 0:  # Plus gros dépensier
+                value_type = "Clients VIP Premium"
+            elif avg_spend > global_stats.get('spend_mean', 100):
+                value_type = "Clients VIP"
+            else:
+                value_type = "Clients Satisfaits"
+        
+        # 3. Clients avec livraison problématique mais toujours satisfaits
+        elif avg_delivery > global_stats.get('delivery_median', 10) * 1.4:
+            if avg_distance > global_stats.get('distance_median', 500) * 1.3:
+                value_type = "Clients Éloignés"
+            elif avg_rating >= 4.0:  # Satisfaits malgré les délais
+                value_type = "Clients Tolérants"
+            else:
+                value_type = "Clients Livraison Lente"
+        
+        # 4. Classification par niveau de dépense et engagement
+        elif avg_spend > global_stats.get('spend_median', 100) * 1.5:
+            if avg_rating >= 4.0:
+                spend_rank = [i for i, (cid, _) in enumerate(clusters_by_spend) if cid == cluster_id][0]
+                if spend_rank <= 1:  # Top 2 des dépensiers
+                    value_type = "Clients Premium"
+                else:
+                    value_type = "Gros Acheteurs"
+            else:
+                value_type = "Gros Acheteurs Mitigés"
+        
+        # 5. Clients moyens et occasionnels
+        elif avg_spend < global_stats.get('spend_median', 100) * 0.9:
+            if avg_rating >= 4.5:
+                value_type = "Clients Satisfaits Économes"
+            else:
+                value_type = "Clients Occasionnels"
+        
+        # 6. Reste = clients standards
         else:
-            value_type = "Clients Standards"
+            if avg_rating >= 4.2:
+                value_type = "Clients Réguliers Satisfaits"
+            else:
+                value_type = "Clients Standards"
         
         interpretations[cluster_id] = {
             'nom': value_type,
@@ -140,6 +204,14 @@ def print_business_summary(business_interpretation):
         print(f"   Commandes moyennes: {info['caracteristiques']['nb_commandes']:.1f}")
         print(f"   Satisfaction: {info['caracteristiques']['satisfaction']:.2f}/5")
         print(f"   Délai livraison: {info['caracteristiques']['delai_livraison']:.1f} jours")
+        
+        # Ajout d'une recommandation actionnable
+        if "Risque" in info['nom'] or "Insatisfaits" in info['nom']:
+            print(f"   ⚠️  ATTENTION: Segment prioritaire pour améliorer l'expérience client")
+        elif "VIP" in info['nom'] or "Premium" in info['nom']:
+            print(f"   ⭐ OPPORTUNITÉ: Segment à valoriser avec des offres premium")
+        elif "Éloignés" in info['nom']:
+            print(f"   📍 ACTION: Optimiser la logistique pour ce segment géographique")
 
 def create_cluster_profiles(data_clustered, numerical_cols, cluster_col='cluster'):
     """
