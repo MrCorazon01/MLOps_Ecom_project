@@ -22,7 +22,7 @@ ecomuserseg/
 ├── notebooks/             # Notebooks Jupyter pour l'exploration, la modélisation et la démonstration
 │   ├── 01_data_exploration.ipynb
 │   ├── 02_segmentation_rfm.ipynb
-│   └── ...                
+│   └── 03_simulation_mise_a_jour.ipynb            
 │
 ├── docs/                  # Documentation utilisateur et technique
 │   ├── index.md
@@ -32,9 +32,9 @@ ecomuserseg/
 │
 ├── tests/                 # Tests unitaires et d'intégration
 │
-├── input/                 # Fichiers de données d'entrée(datasets)
+├── input/                 # Fichiers de données d'entrée(datasets) (Lien vers les données Olist)
 │
-├── output/                # Fichiers de sortie générés (modèles, résultats, rapports)
+├── output/                # Fichiers de sortie générés (modèles, résultats, rapports) 
 │
 ├── settings/              # Fichiers de configuration et paramètres
 │
